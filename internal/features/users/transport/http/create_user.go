@@ -1,17 +1,19 @@
 package users_transport_http
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
 
+	core_errors "github.com/PopovMarko/todo_app/internal/core/errors"
 	core_logger "github.com/PopovMarko/todo_app/internal/core/logger"
-	"go.uber.org/zap"
+	core_http_request "github.com/PopovMarko/todo_app/internal/core/transport/http/request"
+	core_http_response "github.com/PopovMarko/todo_app/internal/core/transport/http/respons"
 )
 
 // DTO for parse user from request and get to service layer
 type CreateUserRequest struct {
-	FullName    string  `json:"full_name"`
-	PhoneNumber *string `json:"phone_number"`
+	FullName    string  `json:"full_name" validate:"required,min=3,max=100" `
+	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+"`
 }
 
 // DTO for get user from service layer and send to http
@@ -26,13 +28,17 @@ type CreateUserResponse struct {
 func (h *UserHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)
-	logger.Debug("Create User method called")
+	responseHandler := core_http_response.NewHTTPResponseHandler(logger, w)
 
-	var request CreateUserRequest
+	var requestUser CreateUserRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		logger.Error("create user", zap.Error(err))
+	if err := core_http_request.DecodeAndValidateRequest(r, &requestUser); err != nil {
+		err = fmt.Errorf("%w", core_errors.ErrInvalidArgument)
+		responseHandler.ErrorResponse("decode or validate user DTO error", err)
+
+		w.WriteHeader(http.StatusBadRequest)
 	}
+
 	w.WriteHeader(http.StatusOK)
 
 }
