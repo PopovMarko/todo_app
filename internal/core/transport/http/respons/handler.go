@@ -23,6 +23,17 @@ func NewHTTPResponseHandler(log *core_logger.Logger, rw http.ResponseWriter) *HT
 	}
 }
 
+// Func to response with json body
+func (h *HTTPResponseHandler) JsonResponse(responseBody any, statusCode int) {
+	h.rw.WriteHeader(statusCode)
+
+	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {
+		h.log.Error("faild to encode json", zap.Error(err))
+		h.ErrorResponse("failed to encode user", err)
+		return
+	}
+}
+
 // Func to reconize errors and establish status code
 func (h *HTTPResponseHandler) ErrorResponse(msg string, err error) {
 	var (
@@ -57,15 +68,10 @@ func (h *HTTPResponseHandler) PanicResponse(msg string, p any) {
 }
 
 func (h *HTTPResponseHandler) errorResponse(msg string, statusCode int, err error) {
-	h.rw.WriteHeader(statusCode)
-
 	response := map[string]string{
 		"message": msg,
 		"error":   err.Error(),
 	}
 
-	if err := json.NewEncoder(h.rw).Encode(response); err != nil {
-		h.log.Error("write HTTP response", zap.Error(err))
-	}
-
+	h.JsonResponse(response, statusCode)
 }

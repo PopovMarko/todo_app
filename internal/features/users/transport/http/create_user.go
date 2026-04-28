@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/PopovMarko/todo_app/internal/core/domain"
 	core_errors "github.com/PopovMarko/todo_app/internal/core/errors"
 	core_logger "github.com/PopovMarko/todo_app/internal/core/logger"
 	core_http_request "github.com/PopovMarko/todo_app/internal/core/transport/http/request"
@@ -18,10 +19,10 @@ type CreateUserRequest struct {
 
 // DTO for get user from service layer and send to http
 type CreateUserResponse struct {
-	ID          int    `json:"id"`
-	Version     int    `json:"version"`
-	FullName    string `json:"full_name"`
-	PhoneNumber string `json:"phone_number"`
+	ID          int     `json:"id"`
+	Version     int     `json:"version"`
+	FullName    string  `json:"full_name"`
+	PhoneNumber *string `json:"phone_number"`
 }
 
 // Method of user handler that in transport.go
@@ -36,9 +37,31 @@ func (h *UserHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		err = fmt.Errorf("%w", core_errors.ErrInvalidArgument)
 		responseHandler.ErrorResponse("decode or validate user DTO error", err)
 
-		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	user := domainFromDTO(requestUser)
+	user, err := h.userService.CreateUser(ctx, user)
+	if err != nil {
+		responseHandler.ErrorResponse("failed to create user", err)
+		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	userResponseDTO := dtoFromDomain(user)
+	responseHandler.JsonResponse(userResponseDTO, http.StatusCreated)
 
+}
+
+// Helper func to connect domain and transport without
+// importing each other
+func domainFromDTO(dto CreateUserRequest) domain.User {
+	return domain.NewUserUninitialized(dto.FullName, dto.PhoneNumber)
+}
+
+func dtoFromDomain(user domain.User) CreateUserResponse {
+	return CreateUserResponse{
+		ID:          user.ID,
+		Version:     user.Version,
+		FullName:    user.FullName,
+		PhoneNumber: user.PhoneNumber,
+	}
 }
