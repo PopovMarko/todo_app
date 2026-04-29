@@ -13,6 +13,7 @@ type UserService interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 	GetUsers(ctx context.Context, limit, offset *int) ([]domain.User, error)
 	GetUser(ctx context.Context, userID int) (domain.User, error)
+	DeleteUser(ctx context.Context, userID int) error
 }
 
 // Handl requests for User on transport layer
@@ -45,6 +46,11 @@ func (h *UserHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodGet,
 			Path:    "/users/{id}",
 			Handler: h.GetUser,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/users/{id}",
+			Handler: h.DeleteUser,
 		},
 	}
 }

@@ -23,6 +23,11 @@ func NewHTTPResponseHandler(log *core_logger.Logger, rw http.ResponseWriter) *HT
 	}
 }
 
+// Func to response without body
+func (h *HTTPResponseHandler) NoContentResponse(statusCode int) {
+	h.rw.WriteHeader(statusCode)
+}
+
 // Func to response with json body
 func (h *HTTPResponseHandler) JsonResponse(responseBody any, statusCode int) {
 	h.rw.WriteHeader(statusCode)
