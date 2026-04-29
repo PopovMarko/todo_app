@@ -55,7 +55,7 @@ func (u *User) Validate() error {
 				core_errors.ErrInvalidArgument)
 		}
 
-		re := regexp.MustCompile(`^/+[0-9]{10,15}$`)
+		re := regexp.MustCompile(`^\+[0-9]+$`)
 
 		if !re.Match([]byte(*u.PhoneNumber)) {
 			return fmt.Errorf("invalid phone number format %s: %w",

@@ -9,6 +9,8 @@ import (
 // Repository interface, service layer depends on
 type UserRepository interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
+	GetUsers(ctx context.Context, limit, offset *int) ([]domain.User, error)
+	GetUser(ctx context.Context, userId int) (domain.User, error)
 }
 
 // Represent service layer
