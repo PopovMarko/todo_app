@@ -66,3 +66,37 @@ func (u *User) Validate() error {
 	}
 	return nil
 }
+
+type UserPatch struct {
+	FullName    Nullable[string]
+	PhoneNumber Nullable[string]
+}
+
+func (p *UserPatch) Validate() error {
+	if p.FullName.Set && p.FullName.Value == nil {
+		return fmt.Errorf("service validate fullName can't be patched to NULL: %w", core_errors.ErrInvalidArgument)
+	}
+	return nil
+}
+
+func (u *User) ApplyPatch(patch UserPatch) error {
+	if err := patch.Validate(); err != nil {
+		return fmt.Errorf("validate user patch: %w", err)
+	}
+
+	tempU := *u
+
+	if patch.FullName.Set {
+		tempU.FullName = *patch.FullName.Value
+	}
+	if patch.PhoneNumber.Set {
+		tempU.PhoneNumber = patch.PhoneNumber.Value
+	}
+
+	if err := tempU.Validate(); err != nil {
+		return fmt.Errorf("Apply patch: %w", err)
+	}
+	*u = tempU
+
+	return nil
+}

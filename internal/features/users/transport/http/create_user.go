@@ -10,19 +10,16 @@ import (
 	core_http_response "github.com/PopovMarko/todo_app/internal/core/transport/http/respons"
 )
 
-// DTO for parse user from request and get to service layer
-type CreateUserRequest struct {
-	FullName    string  `json:"full_name" validate:"required,min=3,max=100" `
-	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+"`
-}
-
 // Method of user handler that in transport.go
 func (h *UserHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseHandler(logger, w)
 
-	type CreateUserResponse UserDTOResponse
+	type (
+		CreateUserResponse UserDTOResponse
+		CreateUserRequest  UserDTORequest
+	)
 	var requestUser CreateUserRequest
 
 	if err := core_http_request.DecodeAndValidateRequest(r, &requestUser); err != nil {
@@ -31,7 +28,7 @@ func (h *UserHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	user := domainFromDTO(requestUser)
+	user := domainFromDTO(UserDTORequest(requestUser))
 	user, err := h.userService.CreateUser(ctx, user)
 	if err != nil {
 		responseHandler.ErrorResponse("failed to create user", err)

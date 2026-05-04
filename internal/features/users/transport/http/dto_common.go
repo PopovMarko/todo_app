@@ -12,7 +12,7 @@ type UserDTOResponse struct {
 
 // Helper func to connect domain and transport without
 // importing each other
-func domainFromDTO(dto CreateUserRequest) domain.User {
+func domainFromDTO(dto UserDTORequest) domain.User {
 	return domain.NewUserUninitialized(dto.FullName, dto.PhoneNumber)
 }
 
@@ -32,4 +32,10 @@ func usersDTOFromDomains(users []domain.User) []UserDTOResponse {
 		usersDTOs[i] = userDTO
 	}
 	return usersDTOs
+}
+
+// DTO for parse user from request and get to service layer
+type UserDTORequest struct {
+	FullName    string  `json:"full_name" validate:"required,min=3,max=100" `
+	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+"`
 }

@@ -12,6 +12,7 @@ type UserRepository interface {
 	GetUsers(ctx context.Context, limit, offset *int) ([]domain.User, error)
 	GetUser(ctx context.Context, userId int) (domain.User, error)
 	DeleteUser(ctx context.Context, userId int) error
+	PatchUser(ctx context.Context, userID int, userPatch domain.User) (domain.User, error)
 }
 
 // Represent service layer

@@ -15,13 +15,13 @@ func (h *UserHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := core_http_utils.GetIntPathParams(r, "id")
 	if err != nil {
-		responseHandler.ErrorResponse("delete user id from request: %w", err)
+		responseHandler.ErrorResponse("delete user from request", err)
 		return
 	}
 
 	err = h.userService.DeleteUser(ctx, *userID)
 	if err != nil {
-		responseHandler.ErrorResponse("delete user from service: %w", err)
+		responseHandler.ErrorResponse("delete user from service", err)
 		return
 	}
 
