@@ -1,7 +1,6 @@
 package core_http_middleware
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -42,25 +41,8 @@ func Logger(l *core_logger.Logger) Middleware {
 				zap.String("URL: ", r.URL.String()),
 			)
 
-			ctx := context.WithValue(r.Context(), "log", log)
+			ctx := core_logger.ToContext(r.Context(), log)
 			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-// Middleware function to panic recover
-func Panic() Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			logger := core_logger.LogFromContext(ctx)
-			responseHandler := core_http_response.NewHTTPResponseHandler(logger, w)
-			defer func() {
-				if p := recover(); p != nil {
-					responseHandler.PanicResponse("during handle HTTP request got some panic", p)
-				}
-			}()
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -83,11 +65,28 @@ func Trace() Middleware {
 			next.ServeHTTP(rw, r)
 
 			// Get status code from custom ResponseWriter after it returns from end handler
-			statusCode := rw.GetStatusCodeOrPanic()
+			statusCode := rw.GetStatusCode()
 			logger.Debug("<<< Outgoing HTTP response",
 				zap.Duration("Latency", time.Since(before)),
 				zap.Int("status", statusCode),
 			)
+		})
+	}
+}
+
+// Middleware function to panic recover
+func Panic() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			logger := core_logger.LogFromContext(ctx)
+			responseHandler := core_http_response.NewHTTPResponseHandler(logger, w)
+			defer func() {
+				if p := recover(); p != nil {
+					responseHandler.PanicResponse("during handle HTTP request got some panic", p)
+				}
+			}()
+			next.ServeHTTP(w, r)
 		})
 	}
 }

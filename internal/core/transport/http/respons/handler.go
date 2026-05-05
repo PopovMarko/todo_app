@@ -1,6 +1,7 @@
 package core_http_response
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -30,13 +31,14 @@ func (h *HTTPResponseHandler) NoContentResponse(statusCode int) {
 
 // Func to response with json body
 func (h *HTTPResponseHandler) JsonResponse(responseBody any, statusCode int) {
-	h.rw.WriteHeader(statusCode)
-
-	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {
+	buffer := &bytes.Buffer{}
+	if err := json.NewEncoder(buffer).Encode(responseBody); err != nil {
 		h.log.Error("faild to encode json", zap.Error(err))
 		h.ErrorResponse("failed to encode user", err)
 		return
 	}
+	h.rw.WriteHeader(statusCode)
+	h.rw.Write(buffer.Bytes())
 }
 
 // Func to reconize errors and establish status code
@@ -62,7 +64,14 @@ func (h *HTTPResponseHandler) ErrorResponse(msg string, err error) {
 	}
 
 	logFunc(msg, zap.Error(err))
-	h.errorResponse(msg, statusCode, err)
+
+	buf := &bytes.Buffer{}
+	json.NewEncoder(buf).Encode(map[string]string{
+		"message": msg,
+		"error":   err.Error(),
+	})
+	h.rw.WriteHeader(statusCode)
+	h.rw.Write(buf.Bytes())
 }
 
 func (h *HTTPResponseHandler) PanicResponse(msg string, p any) {

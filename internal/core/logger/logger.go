@@ -11,15 +11,27 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Key for logger in request
+type loggerContextKey struct {
+}
+
+var key = loggerContextKey{}
+
 // Logger represent custom logger with zap logger and log file
 type Logger struct {
 	*zap.Logger
 	file *os.File
 }
 
+// ToContext returns context with logger instead of middleware Logger,
+// ToContext needed due to key unexporpable for security
+func ToContext(ctx context.Context, logger *Logger) context.Context {
+	return context.WithValue(ctx, key, logger)
+}
+
 // Function that returns logger from context of the request
 func LogFromContext(ctx context.Context) *Logger {
-	log, ok := ctx.Value("log").(*Logger)
+	log, ok := ctx.Value(key).(*Logger)
 	if !ok {
 		panic("no logger in context")
 	}

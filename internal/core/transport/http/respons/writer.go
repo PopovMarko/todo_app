@@ -23,9 +23,9 @@ func (w *ResponseWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 }
 
-func (w *ResponseWriter) GetStatusCodeOrPanic() int {
+func (w *ResponseWriter) GetStatusCode() int {
 	if w.statusCode == UninitializedStatus {
-		panic("Status code uninitialized")
+		return http.StatusOK
 	}
 	return w.statusCode
 }

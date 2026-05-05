@@ -7,7 +7,7 @@ import (
 
 	"github.com/PopovMarko/todo_app/internal/core/domain"
 	core_errors "github.com/PopovMarko/todo_app/internal/core/errors"
-	"github.com/jackc/pgx/v5"
+	core_postgres_pool "github.com/PopovMarko/todo_app/internal/core/repository/postgres/pool"
 )
 
 func (r *UsersRepository) PatchUser(ctx context.Context, userID int, user domain.User) (domain.User, error) {
@@ -36,7 +36,7 @@ func (r *UsersRepository) PatchUser(ctx context.Context, userID int, user domain
 		&userModel.PhoneNumber,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.User{}, fmt.Errorf(
 				"user with ID %d concurrently accessed: %v: %w",
 				userID, err, core_errors.ErrConflict,
