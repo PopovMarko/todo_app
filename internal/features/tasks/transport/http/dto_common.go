@@ -5,17 +5,13 @@ import (
 	"time"
 )
 
-type TaskHTTPRequest struct {
-	Title        string  `json:"title"`
-	Description  *string `json:"description"`
-	AuthorUserID int     `json:"autnor_user_id"`
+type CreateTaskRequest struct {
+	Title        string  `json:"title" validate:"required,min=1,max=100"`
+	Description  *string `json:"description" validate:"omitempty,min=1,max=100"`
+	AuthorUserID int     `json:"author_user_id" validate:"required"`
 }
 
-func domainTaskFromDTO(dto TaskHTTPRequest) domain.Task {
-	return domain.NewUninitializeTask(dto.Title, dto.Description, dto.AuthorUserID)
-}
-
-type TaskHTTPResponse struct {
+type CreateTaskResponse struct {
 	ID           int        `json:"task_id"`
 	Version      int        `json:"version"`
 	Title        string     `json:"title"`
@@ -26,8 +22,8 @@ type TaskHTTPResponse struct {
 	AuthorUserID int        `json:"author_user_id"`
 }
 
-func dtoTaskFromDomain(task domain.Task) TaskHTTPResponse {
-	return TaskHTTPResponse{
+func dtoTaskFromDomain(task domain.Task) CreateTaskResponse {
+	return CreateTaskResponse{
 		ID:           task.ID,
 		Version:      task.Version,
 		Title:        task.Title,

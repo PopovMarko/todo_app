@@ -14,7 +14,7 @@ type TasksService struct {
 	tasksRepository TasksRepository
 }
 
-func NewTaskService(tasksRepository TasksRepository) *TasksService {
+func NewTasksService(tasksRepository TasksRepository) *TasksService {
 	return &TasksService{
 		tasksRepository: tasksRepository,
 	}

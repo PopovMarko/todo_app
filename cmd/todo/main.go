@@ -11,6 +11,9 @@ import (
 	core_pgx_pool "github.com/PopovMarko/todo_app/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/PopovMarko/todo_app/internal/core/transport/http/middleware"
 	core_http_server "github.com/PopovMarko/todo_app/internal/core/transport/http/server"
+	tasks_postgres_repository "github.com/PopovMarko/todo_app/internal/features/tasks/repository/postgres"
+	tasks_service "github.com/PopovMarko/todo_app/internal/features/tasks/service"
+	tasks_transport_http "github.com/PopovMarko/todo_app/internal/features/tasks/transport/http"
 	users_postgres_repository "github.com/PopovMarko/todo_app/internal/features/users/repository/postgres"
 	users_service "github.com/PopovMarko/todo_app/internal/features/users/service"
 	users_transport_http "github.com/PopovMarko/todo_app/internal/features/users/transport/http"
@@ -43,6 +46,12 @@ func main() {
 	userService := users_service.NewService(usersRepository)
 	usersTransportHTTP := users_transport_http.NewUserHTTPHandler(userService)
 
+	logger.Debug("Initializing feature", zap.String("feature", "tasks"))
+
+	taskRepository := tasks_postgres_repository.NewTaskRepository(pool)
+	tasksService := tasks_service.NewTasksService(taskRepository)
+	tasksHTTPHandler := tasks_transport_http.NewTasksHTTPHandler(tasksService)
+
 	logger.Debug("Initializing HTTP server")
 
 	config := core_http_server.NewConfigMust()
@@ -57,6 +66,7 @@ func main() {
 
 	apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.APIVersion1)
 	apiVersionRouter.RegisterRoutes(usersTransportHTTP.Routes()...)
+	apiVersionRouter.RegisterRoutes(tasksHTTPHandler.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 
