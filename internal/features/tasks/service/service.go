@@ -9,6 +9,7 @@ import (
 type TasksRepository interface {
 	CreateTask(ctx context.Context, task domain.Task) (domain.Task, error)
 	GetTasks(ctx context.Context, userID, limit, offset *int) ([]domain.Task, error)
+	GetTask(ctx context.Context, taskID int) (domain.Task, error)
 }
 
 type TasksService struct {
