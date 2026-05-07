@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	core_logger "github.com/PopovMarko/todo_app/internal/core/logger"
 	core_pgx_pool "github.com/PopovMarko/todo_app/internal/core/repository/postgres/pool/pgx"
@@ -21,6 +22,8 @@ import (
 )
 
 func main() {
+	var TimeZone = time.UTC
+	time.Local = TimeZone
 
 	loggerConfig := core_logger.NewLoggerConfigMust()
 	logger, err := core_logger.NewLogger(loggerConfig)
@@ -32,6 +35,8 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+
+	logger.Debug("Application ime zone", zap.Any("zone", TimeZone))
 
 	logger.Debug("Initializing connection pool")
 	pool, err := core_pgx_pool.NewPool(ctx, core_pgx_pool.NewConfigMust())
