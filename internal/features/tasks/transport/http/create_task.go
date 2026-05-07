@@ -27,6 +27,9 @@ func (h *TasksHTTPHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		responseHandler.ErrorResponse("cerate task", err)
 		return
 	}
-	taskResponse := dtoTaskFromDomain(domainTask)
+
+	type CreateTaskResponse TaskDTOResponse
+
+	taskResponse := CreateTaskResponse(dtoTaskFromDomain(domainTask))
 	responseHandler.JsonResponse(taskResponse, http.StatusCreated)
 }

@@ -11,7 +11,7 @@ type CreateTaskRequest struct {
 	AuthorUserID int     `json:"author_user_id" validate:"required"`
 }
 
-type CreateTaskResponse struct {
+type TaskDTOResponse struct {
 	ID           int        `json:"task_id"`
 	Version      int        `json:"version"`
 	Title        string     `json:"title"`
@@ -22,8 +22,8 @@ type CreateTaskResponse struct {
 	AuthorUserID int        `json:"author_user_id"`
 }
 
-func dtoTaskFromDomain(task domain.Task) CreateTaskResponse {
-	return CreateTaskResponse{
+func dtoTaskFromDomain(task domain.Task) TaskDTOResponse {
+	return TaskDTOResponse{
 		ID:           task.ID,
 		Version:      task.Version,
 		Title:        task.Title,
@@ -33,4 +33,12 @@ func dtoTaskFromDomain(task domain.Task) CreateTaskResponse {
 		CompletedAt:  task.CompletedAt,
 		AuthorUserID: task.AuthorUserID,
 	}
+}
+
+func dtoTasksFromDomain(tasks []domain.Task) []TaskDTOResponse {
+	resp := make([]TaskDTOResponse, len(tasks))
+	for i, task := range tasks {
+		resp[i] = dtoTaskFromDomain(task)
+	}
+	return resp
 }
