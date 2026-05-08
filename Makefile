@@ -54,4 +54,11 @@ todo-run:
 	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run ./cmd/todo/main.go
-
+log-cleanup:
+	@read -p "Clean up all log Files. [y/N]:" ans; \
+		if [ "$$ans" = "y" ]; then \
+			rm -rf out/logs/* && \
+			echo "Logs cleaned up"; \
+			else \
+			echo "Logs cleanup cancelled"; \
+	    fi 
