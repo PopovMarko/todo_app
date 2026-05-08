@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	core_errors "github.com/PopovMarko/todo_app/internal/core/errors"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -19,7 +20,7 @@ type Validator interface {
 func DecodeAndValidateRequest(r *http.Request, destDTO any) error {
 
 	if err := json.NewDecoder(r.Body).Decode(&destDTO); err != nil {
-		return fmt.Errorf("decode json: %w", err)
+		return fmt.Errorf("decode json: %v: %w", err, core_errors.ErrInvalidArgument)
 	}
 
 	var err error
