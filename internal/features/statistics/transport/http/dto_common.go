@@ -2,6 +2,7 @@ package statistics_transport_http
 
 import "github.com/PopovMarko/todo_app/internal/core/domain"
 
+
 type StatisticsDTOResponse struct {
 	TotalTasks                int      `json:"total_tasks"`
 	CompletedTasks            int      `json:"completed_tasks"`
@@ -9,7 +10,10 @@ type StatisticsDTOResponse struct {
 	TasksAverageCompetionTime *string  `json:"tasks_average_completion_time"`
 }
 
+
 func dtoStatisticsFromDomain(domainStatistics domain.Statistics) StatisticsDTOResponse {
+
+
 	var tasksAverageCompletionString *string
 	if domainStatistics.TasksAverageCompletionTime != nil {
 		duration := domainStatistics.TasksAverageCompletionTime.String()
