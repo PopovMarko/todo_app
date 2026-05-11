@@ -66,3 +66,10 @@ todoapp-deploy:
 	@docker compose up -d --build todoapp
 ps:
 	@docker compose ps
+swagger-gen: 
+	@docker compose run --rm swagger \
+		init \
+		-g cmd/todo/main.go \
+		-o docs \
+		--parseInternal \
+		--parseDependency

@@ -1,0 +1,12 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample TODO application API.",
+        "title": "TODO Application API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:5050",
+    "basePath": "/api/v1",
+    "paths": {}
+}
