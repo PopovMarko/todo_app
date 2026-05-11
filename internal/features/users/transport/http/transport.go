@@ -40,7 +40,7 @@ func (h *UserHTTPHandler) Routes() []core_http_server.Route {
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/users/",
+			Path:    "/users",
 			Handler: h.GetUsers,
 		},
 		{

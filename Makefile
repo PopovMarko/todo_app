@@ -62,3 +62,15 @@ log-cleanup:
 			else \
 			echo "Logs cleanup cancelled"; \
 	    fi 
+todoapp-deploy:
+	@docker compose up -d --build todoapp
+ps:
+	@docker compose ps
+swagger-gen: 
+	@docker compose run --rm swagger \
+		init \
+		-g cmd/todo/main.go \
+		-d ./ \
+		-o docs \
+		--parseInternal \
+		--parseDependency

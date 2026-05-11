@@ -29,6 +29,30 @@ func RequestID() Middleware {
 	}
 }
 
+func CORS() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			alowedOrigins := make(map[string]struct{})
+			origin := r.Header.Get("Origin")
+
+			if r.Method == http.MethodOptions {
+				if _, ok := alowedOrigins[origin]; ok {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Access-Control-Allow-Origin-Methods",
+						"POST, GET, OPTIONS, PUT, DELETE, PATCH",
+					)
+					w.Header().Set("Access-Control-Allow-Headers",
+						"Authorization",
+					)
+					w.WriteHeader(http.StatusOK)
+					return
+				}
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // Middleware function to put the Logger into Context of the Request
 func Logger(l *core_logger.Logger) Middleware {
 	return func(next http.Handler) http.Handler {

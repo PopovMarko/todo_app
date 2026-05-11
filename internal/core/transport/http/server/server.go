@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/PopovMarko/todo_app/docs"
 	core_logger "github.com/PopovMarko/todo_app/internal/core/logger"
 	core_http_middleware "github.com/PopovMarko/todo_app/internal/core/transport/http/middleware"
 	"go.uber.org/zap"
+
+	"github.com/swaggo/http-swagger"
 )
 
 type HTTPServer struct {
@@ -34,6 +37,18 @@ func (s *HTTPServer) RegisterAPIRouters(routers ...*APIVersionRouter) {
 		s.mux.Handle(prefix+"/", http.StripPrefix(prefix, router))
 	}
 }
+
+func (s *HTTPServer) RegisterSwagger() {
+	s.mux.Handle("/swagger/", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
+	s.mux.HandleFunc("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		swaggerDoc := docs.SwaggerInfo.ReadDoc()
+		_, _ = w.Write([]byte(swaggerDoc))
+	})
+
+}
+
 func (s *HTTPServer) Run(ctx context.Context) error {
 	mux := core_http_middleware.ChainMiddleware(s.mux, s.middleware...)
 	server := &http.Server{

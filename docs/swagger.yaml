@@ -1,0 +1,526 @@
+basePath: /api/v1
+definitions:
+  github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse:
+    properties:
+      error:
+        example: Error description for developers
+        type: string
+      message:
+        example: Human readable error message
+        type: string
+    type: object
+  github_com_PopovMarko_todo_app_internal_core_transport_http_types.Nullable-bool:
+    properties:
+      set:
+        type: boolean
+      value:
+        type: boolean
+    type: object
+  github_com_PopovMarko_todo_app_internal_core_transport_http_types.Nullable-string:
+    properties:
+      set:
+        type: boolean
+      value:
+        type: string
+    type: object
+  internal_features_statistics_transport_http.StatisticsDTOResponse:
+    properties:
+      completed_tasks:
+        type: integer
+      tasks_average_completion_time:
+        type: string
+      tasks_completion_rate:
+        type: number
+      total_tasks:
+        type: integer
+    type: object
+  internal_features_tasks_transport_http.CreateTaskRequest:
+    properties:
+      author_user_id:
+        type: integer
+      description:
+        maxLength: 1000
+        minLength: 1
+        type: string
+      title:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - author_user_id
+    - title
+    type: object
+  internal_features_tasks_transport_http.PatchTaskRequest:
+    properties:
+      completed:
+        $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_types.Nullable-bool'
+      description:
+        $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_types.Nullable-string'
+      title:
+        $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_types.Nullable-string'
+    type: object
+  internal_features_tasks_transport_http.TaskDTOResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      task_id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_users_transport_http.GetUserResponse:
+    properties:
+      full_name:
+        example: John Doe
+        type: string
+      id:
+        example: 10
+        type: integer
+      phone_number:
+        example: "+380675640000"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+  internal_features_users_transport_http.PatchUserRequest:
+    properties:
+      full_name:
+        example: Johne
+        type: string
+      phone_number:
+        example: "+3805640000"
+        type: string
+    type: object
+  internal_features_users_transport_http.PatchUserResponse:
+    properties:
+      full_name:
+        example: John Doe
+        type: string
+      id:
+        example: 10
+        type: integer
+      phone_number:
+        example: "+380675640000"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+  internal_features_users_transport_http.UserDTORequest:
+    properties:
+      full_name:
+        example: John Doe
+        maxLength: 100
+        minLength: 3
+        type: string
+      phone_number:
+        example: "+380675640000"
+        maxLength: 15
+        minLength: 10
+        type: string
+    required:
+    - full_name
+    type: object
+  internal_features_users_transport_http.UserDTOResponse:
+    properties:
+      full_name:
+        example: John Doe
+        type: string
+      id:
+        example: 10
+        type: integer
+      phone_number:
+        example: "+380675640000"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+host: localhost:5050
+info:
+  contact: {}
+  description: This is a sample TODO application API.
+  title: TODO Application API
+  version: "1.0"
+paths:
+  /statistics:
+    get:
+      description: Get statistics parameters from BD with optional filtering
+      parameters:
+      - description: Filter by author ID
+        in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Statistics
+          schema:
+            $ref: '#/definitions/internal_features_statistics_transport_http.StatisticsDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Get statistics
+      tags:
+      - Statistics
+  /tasks:
+    get:
+      description: Get tasks with optional pagination (user, limit, offset)
+      parameters:
+      - description: User ID to filter tasks by User
+        in: query
+        name: id
+        type: integer
+      - description: window size
+        in: query
+        name: limit
+        type: integer
+      - description: window offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of filtered tasks
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.TaskDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Get tasks
+      tags:
+      - Tasks
+    post:
+      description: Create new task with task information
+      parameters:
+      - description: New task information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created task information
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.TaskDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Create Task
+      tags:
+      - Tasks
+  /tasks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete task by task ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Task deleted successfully
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Delete task
+      tags:
+      - Tasks
+    get:
+      description: Get task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task information
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.TaskDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Get task
+      tags:
+      - Tasks
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Patch task with new information
+        ### Logic of fields patch (three-state logic)
+        1. **field not sent** `description` ignored, value in DB not change
+        2. **field value sent explicitly** `"description": "any new description"` sets new value in DB
+        3. **field set to null** `"description": null` clears value in DB
+        **Restriction** `title` can't be set to null
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Patch information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.PatchTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Patched task copy
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.TaskDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Patch task
+      tags:
+      - Tasks
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get users with optional pagination(limit, offset)
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Shift size
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Get users successfully
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_users_transport_http.UserDTOResponse'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Get users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_users_transport_http.UserDTORequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.UserDTOResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User deleted successfully
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Get user information by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information retrieved successfully
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.GetUserResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Get user by ID
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Patch user with new user information
+        ### Logic of fields patch (three-state logic)
+        1. **field not sent** `phone_number` ignored, value in DB not change
+        2. **field value sent explicitly** `"phone_number": "+3805640000"` sets new value in DB
+        3. **field set to null** `"phone_number": null` clears value in DB
+        **Restriction** `full_name` can't be set to null
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New user information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_users_transport_http.PatchUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Panched user information
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.PatchUserResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_PopovMarko_todo_app_internal_core_transport_http_respons.ErrorResponse'
+      summary: Patch user
+      tags:
+      - Users
+swagger: "2.0"

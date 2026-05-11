@@ -9,6 +9,18 @@ import (
 	core_http_utils "github.com/PopovMarko/todo_app/internal/core/transport/http/utils"
 )
 
+// GetTasks 	godoc
+// @Summary 	Get tasks
+// @Description Get tasks with optional pagination (user, limit, offset)
+// @Tags		Tasks
+// @Produce 	json
+// @Param		id query int false "User ID to filter tasks by User"
+// @Param 		limit query int false "window size"
+// @Param		offset query int false "window offset"
+// @Success		200 {object} TaskDTOResponse "List of filtered tasks"
+// @Failure		400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure		500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router 		/tasks [get]
 func (h *TasksHTTPHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)

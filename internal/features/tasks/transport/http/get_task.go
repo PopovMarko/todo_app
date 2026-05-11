@@ -8,6 +8,17 @@ import (
 	core_http_utils "github.com/PopovMarko/todo_app/internal/core/transport/http/utils"
 )
 
+// GetTask 		godoc
+// @Summary 	Get task
+// @Description Get task by ID
+// @Tags 		Tasks
+// @Produce		json
+// @Param		id path int true "Task ID"
+// @Success		200 {object} TaskDTOResponse "Task information"
+// @Failure		404 {object} core_http_response.ErrorResponse "Task not found"
+// @Failure 	400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 	500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router		/tasks/{id} [get]
 func (h *TasksHTTPHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)

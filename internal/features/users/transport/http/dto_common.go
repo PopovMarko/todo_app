@@ -4,10 +4,10 @@ import "github.com/PopovMarko/todo_app/internal/core/domain"
 
 // DTO for get user from service layer and send to http
 type UserDTOResponse struct {
-	ID          int     `json:"id"`
-	Version     int     `json:"version"`
-	FullName    string  `json:"full_name"`
-	PhoneNumber *string `json:"phone_number"`
+	ID          int     `json:"id" example:"10"`
+	Version     int     `json:"version" example:"3"`
+	FullName    string  `json:"full_name" example:"John Doe"`
+	PhoneNumber *string `json:"phone_number" example:"+380675640000"`
 }
 
 // Helper func to connect domain and transport without
@@ -36,6 +36,6 @@ func usersDTOFromDomains(users []domain.User) []UserDTOResponse {
 
 // DTO for parse user from request and get to service layer
 type UserDTORequest struct {
-	FullName    string  `json:"full_name" validate:"required,min=3,max=100" `
-	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+"`
+	FullName    string  `json:"full_name" validate:"required,min=3,max=100" example:"John Doe"`
+	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+" example:"+380675640000"`
 }

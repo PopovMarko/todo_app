@@ -22,8 +22,15 @@ import (
 	users_service "github.com/PopovMarko/todo_app/internal/features/users/service"
 	users_transport_http "github.com/PopovMarko/todo_app/internal/features/users/transport/http"
 	"go.uber.org/zap"
+
+	_ "github.com/PopovMarko/todo_app/docs"
 )
 
+// @title TODO Application API
+// @version 1.0
+// @description This is a sample TODO application API.
+// @host localhost:5050
+// @BasePath /api/v1
 func main() {
 	var TimeZone = time.UTC
 	time.Local = TimeZone
@@ -72,6 +79,7 @@ func main() {
 	httpServer := core_http_server.NewHTTPServer(
 		config,
 		logger,
+		core_http_middleware.CORS(),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),
@@ -84,6 +92,7 @@ func main() {
 	apiVersionRouter.RegisterRoutes(statHTTPHandler.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
+	httpServer.RegisterSwagger()
 
 	logger.Debug("Starting todo application")
 

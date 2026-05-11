@@ -9,6 +9,17 @@ import (
 	core_http_response "github.com/PopovMarko/todo_app/internal/core/transport/http/respons"
 )
 
+// CreateTask godoc
+// @Summary 	Create Task
+// @Description	Create new task with task information
+// @Tags 		Tasks
+// @Accespt		json
+// @Produce		json
+// @Param		request body CreateTaskRequest true "New task information"
+// @Success		201 {object} TaskDTOResponse "Created task information"
+// @Failure		400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 	500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router		/tasks [post]
 func (h *TasksHTTPHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)
