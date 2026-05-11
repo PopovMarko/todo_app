@@ -62,3 +62,7 @@ log-cleanup:
 			else \
 			echo "Logs cleanup cancelled"; \
 	    fi 
+todoapp-deploy:
+	@docker compose up -d --build todoapp
+ps:
+	@docker compose ps
