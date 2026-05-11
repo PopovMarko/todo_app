@@ -70,6 +70,7 @@ swagger-gen:
 	@docker compose run --rm swagger \
 		init \
 		-g cmd/todo/main.go \
+		-d ./ \
 		-o docs \
 		--parseInternal \
 		--parseDependency

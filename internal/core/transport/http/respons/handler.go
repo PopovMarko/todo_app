@@ -65,11 +65,13 @@ func (h *HTTPResponseHandler) ErrorResponse(msg string, err error) {
 
 	logFunc(msg, zap.Error(err))
 
+	response := ErrorResponse{
+		Message: msg,
+		Error:   err.Error(),
+	}
+
 	buf := &bytes.Buffer{}
-	json.NewEncoder(buf).Encode(map[string]string{
-		"message": msg,
-		"error":   err.Error(),
-	})
+	json.NewEncoder(buf).Encode(response)
 	h.rw.WriteHeader(statusCode)
 	h.rw.Write(buf.Bytes())
 }

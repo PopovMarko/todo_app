@@ -19,8 +19,8 @@ type (
 )
 
 type PatchUserRequest struct {
-	FullName    core_http_types.Nullable[string] `json:"full_name"`
-	PhoneNumber core_http_types.Nullable[string] `json:"phone_number"`
+	FullName    core_http_types.Nullable[string] `json:"full_name" swaggertype:"string" example:"Johne"`
+	PhoneNumber core_http_types.Nullable[string] `json:"phone_number" swaggertype:"string" example:"+3805640000"`
 }
 
 func (p *PatchUserRequest) Validate() error {
@@ -46,6 +46,25 @@ func (p *PatchUserRequest) Validate() error {
 	return nil
 }
 
+// PatchUser 	godoc
+// @Summary 	Patch user
+// @Description Patch user with new user information
+// @Description ### Logic of fields patch (three-state logic)
+// @Description	1. **field not sent** `phone_number` ignored, value in DB not change
+// @Description	2. **field value sent explicitly** `"phone_number": "+3805640000"` sets new value in DB
+// @Description	3. **field set to null** `"phone_number": null` clears value in DB
+// @Description **Restriction** `full_name` can't be set to null
+// @Tags 		Users
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "User ID"
+// @Param 		request body PatchUserRequest true "New user information"
+// @Success 	200 {object} PatchUserResponse "Panched user information"
+// @Failure 	404 {object} core_http_response.ErrorResponse "User not found"
+// @Failure 	400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 	409 {object} core_http_response.ErrorResponse "Conflict"
+// @Failure 	500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router 		/users/{id} [patch]
 func (h *UserHTTPHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)

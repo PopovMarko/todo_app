@@ -8,6 +8,18 @@ import (
 	core_http_utils "github.com/PopovMarko/todo_app/internal/core/transport/http/utils"
 )
 
+// DeleteUser godoc
+// @Sumary 		Delete a user
+// @Description Delete a user by their ID
+// @Tags		Users
+// @Accept		json
+// @Produce 	json
+// @Param		id path int true "User ID"
+// @Success		204 "User deleted successfully"
+// @Failure		400 {object} core_http_response.ErrorResponse "Invalid request"
+// @Failure		404 {object} core_http_response.ErrorResponse "User not found"
+// @Failure 	500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router		/users/{id} [delete]
 func (h *UserHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)

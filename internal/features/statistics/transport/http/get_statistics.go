@@ -10,6 +10,18 @@ import (
 	core_http_utils "github.com/PopovMarko/todo_app/internal/core/transport/http/utils"
 )
 
+// GetStatistics godoc
+// @Summary 	Get statistics
+// @Description Get statistics parameters from BD with optional filtering
+// @Tags 		Statistics
+// @Produce		json
+// @Param		id query int false "Filter by author ID"
+// @Param 		from query time.Time false "Start date"
+// @Param 		to query time.Time false "End date"
+// @Success		200 {object}  StatisticsDTOResponse "Statistics"
+// @Failure		400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 	500 {object} core_http_response.ErrorResponse "internal server error"
+// @Router 		/statistics [get]
 func (h *StatisticsHTTPHandler) GetStatistics(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.LogFromContext(ctx)
