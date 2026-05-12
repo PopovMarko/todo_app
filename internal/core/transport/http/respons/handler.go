@@ -29,6 +29,15 @@ func (h *HTTPResponseHandler) NoContentResponse(statusCode int) {
 	h.rw.WriteHeader(statusCode)
 }
 
+// func to response with HTML page
+func (h *HTTPResponseHandler) HTMLResponse(responseBody []byte) {
+	h.rw.Header().Set("Content-Type", "text/html; charset=utf-8")
+	h.rw.WriteHeader(http.StatusOK)
+	if _, err := h.rw.Write(responseBody); err != nil {
+		h.log.Error("write response body", zap.Error(err))
+	}
+}
+
 // Func to response with json body
 func (h *HTTPResponseHandler) JsonResponse(responseBody any, statusCode int) {
 	buffer := &bytes.Buffer{}
