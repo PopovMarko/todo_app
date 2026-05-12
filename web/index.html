@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TODO App — API Explorer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #1e1e2e;
+      --mantle:   #181825;
+      --crust:    #11111b;
+      --surface0: #313244;
+      --surface1: #45475a;
+      --surface2: #585b70;
+      --overlay0: #6c7086;
+      --overlay1: #7f849c;
+      --text:     #cdd6f4;
+      --subtext0: #a6adc8;
+      --subtext1: #bac2de;
+      --blue:     #89b4fa;
+      --green:    #a6e3a1;
+      --yellow:   #f9e2af;
+      --red:      #f38ba8;
+      --mauve:    #cba6f7;
+      --teal:     #94e2d5;
+    }
+
+    html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── App shell ── */
+    .app { display: flex; flex-direction: column; height: 100%; }
+
+    .header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 20px; height: 48px; flex-shrink: 0;
+      background: var(--mantle); border-bottom: 1px solid var(--surface0);
+    }
+    .header-title { font-size: 15px; font-weight: 700; }
+    .header-divider { width: 1px; height: 18px; background: var(--surface1); }
+    .header-url {
+      font-size: 11px; font-family: monospace; color: var(--subtext0);
+      background: var(--surface0); padding: 3px 10px; border-radius: 4px;
+    }
+
+    .body { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 215px; flex-shrink: 0; overflow-y: auto;
+      background: var(--mantle); border-right: 1px solid var(--surface0);
+      padding: 6px 0 20px;
+    }
+
+    .group-label {
+      padding: 14px 14px 4px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--overlay0);
+    }
+
+    .op-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 14px; cursor: pointer; user-select: none;
+      border-left: 2px solid transparent;
+      transition: background .1s;
+    }
+    .op-item:hover { background: var(--surface0); }
+    .op-item.active { background: rgba(137,180,250,.08); border-left-color: var(--blue); }
+
+    .op-name { font-size: 12px; color: var(--subtext1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .op-item.active .op-name,
+    .op-item:hover  .op-name  { color: var(--text); }
+
+    .badge {
+      font-size: 8.5px; font-weight: 800; font-family: monospace;
+      padding: 2px 4px; border-radius: 3px; flex-shrink: 0;
+      width: 42px; text-align: center; letter-spacing: .02em;
+    }
+    .badge-GET    { background: rgba(137,180,250,.15); color: var(--blue);   }
+    .badge-POST   { background: rgba(166,227,161,.15); color: var(--green);  }
+    .badge-PATCH  { background: rgba(249,226,175,.15); color: var(--yellow); }
+    .badge-DELETE { background: rgba(243,139,168,.15); color: var(--red);    }
+
+    /* ── Main ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px; color: var(--overlay0);
+    }
+    .empty-state strong { font-size: 15px; }
+    .empty-state span   { font-size: 13px; }
+
+    .panel { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 24px; gap: 16px; }
+
+    /* ── Operation header ── */
+    .op-header { display: flex; flex-direction: column; gap: 4px; }
+    .op-title-row { display: flex; align-items: center; gap: 10px; }
+    .op-method {
+      font-size: 12px; font-weight: 700; font-family: monospace;
+      padding: 3px 10px; border-radius: 4px;
+    }
+    .op-path { font-family: monospace; font-size: 14px; font-weight: 500; word-break: break-all; }
+    .op-desc { font-size: 13px; color: var(--subtext0); }
+
+    /* ── Cards ── */
+    .card { background: var(--mantle); border: 1px solid var(--surface0); border-radius: 8px; overflow: hidden; }
+    .card-head {
+      padding: 8px 16px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em; color: var(--overlay1);
+      background: rgba(0,0,0,.18); border-bottom: 1px solid var(--surface0);
+    }
+    .card-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* ── Fields ── */
+    .field      { display: flex; flex-direction: column; gap: 5px; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .field-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; font-family: monospace; color: var(--text);
+    }
+
+    .tag { font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 3px; font-family: sans-serif; letter-spacing: .02em; }
+    .tag-required { background: rgba(243,139,168,.15); color: var(--red);    }
+    .tag-optional { background: rgba(108,112,134,.15); color: var(--overlay1); }
+    .tag-path     { background: rgba(203,166,247,.15); color: var(--mauve);  }
+    .tag-query    { background: rgba(137,180,250,.15); color: var(--blue);   }
+    .tag-body     { background: rgba(148,226,213,.15); color: var(--teal);   }
+
+    .field-hint { font-size: 11px; color: var(--overlay0); }
+
+    input[type=text], input[type=number], input[type=date], select {
+      background: var(--crust); border: 1px solid var(--surface1);
+      border-radius: 5px; padding: 7px 10px;
+      color: var(--text); font-size: 13px; font-family: monospace;
+      outline: none; width: 100%; transition: border-color .15s;
+    }
+    input:focus, select:focus { border-color: var(--blue); }
+    input::placeholder { color: var(--overlay0); }
+    input[type=date]::-webkit-calendar-picker-indicator { filter: invert(.6); cursor: pointer; }
+    select option { background: var(--surface0); }
+
+    /* ── Section separator ── */
+    .sep { display: flex; align-items: center; gap: 10px; margin: 2px 0; }
+    .sep-line  { flex: 1; height: 1px; background: var(--surface0); }
+    .sep-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--overlay0); white-space: nowrap; }
+
+    /* ── Nullable / three-state fields ── */
+    .nl-field { display: flex; flex-direction: column; gap: 6px; }
+
+    .nl-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .nl-toggle input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--blue); cursor: pointer; flex-shrink: 0; }
+    .nl-key { font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text); }
+
+    .nl-body { display: none; flex-direction: column; gap: 6px; padding-left: 22px; }
+    .nl-body.open { display: flex; }
+
+    .null-opt { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+    .null-opt input[type=checkbox] { width: 13px; height: 13px; accent-color: var(--red); cursor: pointer; }
+    .null-opt-label { font-size: 11px; color: var(--subtext0); }
+
+    /* ── Buttons ── */
+    .btn { padding: 8px 22px; border: none; border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; align-self: flex-start; }
+    .btn:hover  { opacity: .85; }
+    .btn:active { transform: scale(.97); }
+    .btn-send   { background: var(--blue); color: var(--crust); }
+    .btn-delete { background: var(--red);  color: var(--crust); }
+
+    /* ── Response ── */
+    .resp-empty { padding: 18px 16px; font-size: 13px; color: var(--overlay0); }
+
+    .resp-status {
+      display: none; align-items: center; gap: 10px;
+      padding: 10px 16px; border-bottom: 1px solid var(--surface0);
+    }
+
+    .status-chip { font-size: 12px; font-weight: 700; font-family: monospace; padding: 3px 9px; border-radius: 4px; }
+    .s2xx { background: rgba(166,227,161,.15); color: var(--green);  }
+    .s4xx { background: rgba(249,226,175,.15); color: var(--yellow); }
+    .s5xx { background: rgba(243,139,168,.15); color: var(--red);    }
+
+    .resp-label { font-size: 12px; color: var(--subtext0); }
+
+    .resp-body {
+      display: none; padding: 14px 16px;
+      font-family: monospace; font-size: 12.5px; line-height: 1.65;
+      white-space: pre-wrap; word-break: break-word;
+      max-height: 500px; overflow-y: auto;
+    }
+
+    /* JSON colors */
+    .jk    { color: var(--blue);    }
+    .js    { color: var(--green);   }
+    .jn    { color: var(--mauve);   }
+    .jb    { color: var(--yellow);  }
+    .jnull { color: var(--red);     }
+
+    /* ── Scrollbars ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--surface2); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <span class="header-title">TODO App</span>
+    <div class="header-divider"></div>
+    <span class="header-url">http://localhost:5050/api/v1</span>
+  </header>
+
+  <div class="body">
+
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main">
+      <div class="empty-state" id="empty">
+        <strong>API Explorer</strong>
+        <span>Select an operation from the sidebar</span>
+      </div>
+      <div class="panel" id="panel"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const BASE = 'http://localhost:5050/api/v1';
+
+// ─── Operations definition ────────────────────────────────────────────────────
+
+const OPS = [
+  { group: 'Users', items: [
+    { id: 'u-create', method: 'POST',   path: '/users',     label: 'Create User',
+      desc: 'Create a new user',
+      fields: [
+        { key: 'full_name',    in: 'body',  type: 'text',   required: true,  hint: '3–100 characters' },
+        { key: 'phone_number', in: 'body',  type: 'text',   required: false, hint: 'Optional · starts with + · 10–15 chars' },
+      ]
+    },
+    { id: 'u-list',   method: 'GET',    path: '/users',     label: 'Get Users',
+      desc: 'List users with optional pagination',
+      fields: [
+        { key: 'limit',  in: 'query', type: 'number', required: false, hint: 'Page size' },
+        { key: 'offset', in: 'query', type: 'number', required: false, hint: 'Page offset' },
+      ]
+    },
+    { id: 'u-get',    method: 'GET',    path: '/users/{id}', label: 'Get User',
+      desc: 'Get a single user by ID',
+      fields: [
+        { key: 'id', in: 'path', type: 'number', required: true, hint: 'User ID' },
+      ]
+    },
+    { id: 'u-patch',  method: 'PATCH',  path: '/users/{id}', label: 'Patch User',
+      desc: 'Partially update a user',
+      fields: [
+        { key: 'id', in: 'path', type: 'number', required: true, hint: 'User ID' },
+      ],
+      nullable: [
+        { key: 'full_name',    type: 'text', canBeNull: false, hint: '3–100 characters · cannot be set to null' },
+        { key: 'phone_number', type: 'text', canBeNull: true,  hint: '10–15 chars, starts with + · send null to clear' },
+      ]
+    },
+    { id: 'u-delete', method: 'DELETE', path: '/users/{id}', label: 'Delete User',
+      desc: 'Delete a user by ID',
+      fields: [
+        { key: 'id', in: 'path', type: 'number', required: true, hint: 'User ID' },
+      ]
+    },
+  ]},
+
+  { group: 'Tasks', items: [
+    { id: 't-create', method: 'POST',   path: '/tasks',     label: 'Create Task',
+      desc: 'Create a new task',
+      fields: [
+        { key: 'title',          in: 'body', type: 'text',   required: true,  hint: '3–100 characters' },
+        { key: 'description',    in: 'body', type: 'text',   required: false, hint: 'Optional · 1–1000 characters' },
+        { key: 'author_user_id', in: 'body', type: 'number', required: true,  hint: 'ID of an existing user' },
+      ]
+    },
+    { id: 't-list',   method: 'GET',    path: '/tasks',     label: 'Get Tasks',
+      desc: 'List tasks with optional filters and pagination',
+      fields: [
+        { key: 'id',     in: 'query', type: 'number', required: false, hint: 'Filter by author user ID' },
+        { key: 'limit',  in: 'query', type: 'number', required: false, hint: 'Page size' },
+        { key: 'offset', in: 'query', type: 'number', required: false, hint: 'Page offset' },
+      ]
+    },
+    { id: 't-get',    method: 'GET',    path: '/tasks/{id}', label: 'Get Task',
+      desc: 'Get a single task by ID',
+      fields: [
+        { key: 'id', in: 'path', type: 'number', required: true, hint: 'Task ID' },
+      ]
+    },
+    { id: 't-patch',  method: 'PATCH',  path: '/tasks/{id}', label: 'Patch Task',
+      desc: 'Partially update a task',
+      fields: [
+        { key: 'id', in: 'path', type: 'number', required: true, hint: 'Task ID' },
+      ],
+      nullable: [
+        { key: 'title',       type: 'text', canBeNull: false, hint: '3–100 characters · cannot be set to null' },
+        { key: 'description', type: 'text', canBeNull: true,  hint: '1–1000 characters · send null to clear' },
+        { key: 'completed',   type: 'bool', canBeNull: false, hint: 'Cannot be set to null' },
+      ]
+    },
+    { id: 't-delete', method: 'DELETE', path: '/tasks/{id}', label: 'Delete Task',
+      desc: 'Delete a task by ID',
+      fields: [
+        { key: 'id', in: 'path', type: 'number', required: true, hint: 'Task ID' },
+      ]
+    },
+  ]},
+
+  { group: 'Statistics', items: [
+    { id: 's-get', method: 'GET', path: '/statistics', label: 'Get Statistics',
+      desc: 'Task statistics with optional filters by user and date range',
+      fields: [
+        { key: 'id',   in: 'query', type: 'number', required: false, hint: 'Filter by user ID' },
+        { key: 'from', in: 'query', type: 'date',   required: false, hint: 'Start date' },
+        { key: 'to',   in: 'query', type: 'date',   required: false, hint: 'End date' },
+      ]
+    },
+  ]},
+];
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+
+function buildSidebar() {
+  const sb = document.getElementById('sidebar');
+  OPS.forEach(group => {
+    sb.appendChild(mk('div', 'group-label', group.group));
+    group.items.forEach(op => {
+      const item = mk('div', 'op-item');
+      item.dataset.id = op.id;
+      const b = mk('span', `badge badge-${op.method}`, op.method);
+      item.appendChild(b);
+      item.appendChild(mk('span', 'op-name', op.label));
+      item.addEventListener('click', () => activate(op.id));
+      sb.appendChild(item);
+    });
+  });
+}
+
+function activate(id) {
+  document.querySelectorAll('.op-item').forEach(i => i.classList.toggle('active', i.dataset.id === id));
+  const op = findOp(id);
+  if (op) renderPanel(op);
+}
+
+function findOp(id) {
+  for (const g of OPS) { const o = g.items.find(x => x.id === id); if (o) return o; }
+}
+
+// ─── Panel ────────────────────────────────────────────────────────────────────
+
+function renderPanel(op) {
+  document.getElementById('empty').style.display = 'none';
+  const panel = document.getElementById('panel');
+  panel.style.display = 'flex';
+  panel.innerHTML = '';
+
+  // Header
+  const hdr = mk('div', 'op-header');
+  const row = mk('div', 'op-title-row');
+  row.appendChild(mk('span', `op-method badge-${op.method}`, op.method));
+  row.appendChild(mk('span', 'op-path', BASE + op.path));
+  hdr.appendChild(row);
+  if (op.desc) hdr.appendChild(mk('div', 'op-desc', op.desc));
+  panel.appendChild(hdr);
+
+  panel.appendChild(buildRequestCard(op));
+  panel.appendChild(buildResponseCard());
+}
+
+// ─── Request card ─────────────────────────────────────────────────────────────
+
+function buildRequestCard(op) {
+  const card = mk('div', 'card');
+  const isReadOnly = op.method === 'GET' || op.method === 'DELETE';
+  card.appendChild(mk('div', 'card-head', isReadOnly ? 'Parameters' : 'Request'));
+
+  const body = mk('div', 'card-body');
+  card.appendChild(body);
+
+  const pathF  = op.fields.filter(f => f.in === 'path');
+  const queryF = op.fields.filter(f => f.in === 'query');
+  const bodyF  = op.fields.filter(f => f.in === 'body');
+  const nullF  = op.nullable || [];
+
+  let hasPrev = false;
+
+  if (pathF.length) {
+    renderFieldGroup(pathF, body);
+    hasPrev = true;
+  }
+
+  if (queryF.length) {
+    if (hasPrev) body.appendChild(separator('Filters'));
+    renderFieldGroup(queryF, body);
+    hasPrev = true;
+  }
+
+  if (bodyF.length) {
+    if (hasPrev) body.appendChild(separator('Body'));
+    bodyF.forEach(f => body.appendChild(fieldEl(f)));
+    hasPrev = true;
+  }
+
+  if (nullF.length) {
+    body.appendChild(separator('Patch fields — check to include'));
+    nullF.forEach(f => body.appendChild(nullableEl(f)));
+  }
+
+  const btn = mk('button', `btn ${op.method === 'DELETE' ? 'btn-delete' : 'btn-send'}`,
+                 op.method === 'DELETE' ? 'Delete' : 'Send Request');
+  btn.addEventListener('click', () => submit(op));
+  body.appendChild(btn);
+
+  return card;
+}
+
+function renderFieldGroup(fields, parent) {
+  if (fields.length === 1) {
+    parent.appendChild(fieldEl(fields[0]));
+  } else {
+    const grid = mk('div', 'field-grid');
+    fields.forEach(f => grid.appendChild(fieldEl(f)));
+    parent.appendChild(grid);
+  }
+}
+
+function fieldEl(f) {
+  const wrap = mk('div', 'field');
+
+  const lbl = mk('label', 'field-label');
+  lbl.htmlFor = `f-${f.key}`;
+  lbl.appendChild(document.createTextNode(f.key));
+  if (f.required !== undefined)
+    lbl.appendChild(mk('span', `tag ${f.required ? 'tag-required' : 'tag-optional'}`, f.required ? 'required' : 'optional'));
+  lbl.appendChild(mk('span', `tag tag-${f.in}`, f.in));
+  wrap.appendChild(lbl);
+
+  let inp;
+  if (f.type === 'date') {
+    inp = document.createElement('input');
+    inp.type = 'date';
+  } else if (f.type === 'number') {
+    inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = '0'; inp.step = '1';
+  } else {
+    inp = document.createElement('input');
+    inp.type = 'text';
+    inp.placeholder = f.hint || '';
+  }
+  inp.id = `f-${f.key}`;
+  inp.dataset.in   = f.in;
+  inp.dataset.type = f.type;
+  inp.dataset.req  = f.required ? '1' : '0';
+  wrap.appendChild(inp);
+
+  if (f.hint) wrap.appendChild(mk('div', 'field-hint', f.hint));
+  return wrap;
+}
+
+function nullableEl(f) {
+  const wrap = mk('div', 'nl-field');
+
+  // Include toggle
+  const toggle = mk('label', 'nl-toggle');
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.id = `nl-cb-${f.key}`;
+  toggle.appendChild(cb);
+  toggle.appendChild(mk('span', 'nl-key', f.key));
+  if (f.canBeNull) toggle.appendChild(mk('span', 'tag tag-optional', 'nullable'));
+  wrap.appendChild(toggle);
+
+  // Expandable area
+  const nbody = mk('div', 'nl-body');
+  nbody.id = `nl-body-${f.key}`;
+  wrap.appendChild(nbody);
+
+  cb.addEventListener('change', () => nbody.classList.toggle('open', cb.checked));
+
+  if (f.type === 'bool') {
+    const sel = document.createElement('select');
+    sel.id = `nl-val-${f.key}`;
+    ['true', 'false'].forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+    nbody.appendChild(sel);
+  } else {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.id = `nl-val-${f.key}`;
+    inp.placeholder = f.hint || '';
+    nbody.appendChild(inp);
+
+    if (f.canBeNull) {
+      const nullRow = mk('label', 'null-opt');
+      const ncb = document.createElement('input');
+      ncb.type = 'checkbox';
+      ncb.id = `nl-null-${f.key}`;
+      ncb.addEventListener('change', () => {
+        inp.disabled = ncb.checked;
+        if (ncb.checked) inp.value = '';
+      });
+      nullRow.appendChild(ncb);
+      nullRow.appendChild(mk('span', 'null-opt-label', 'Set to null (clear field)'));
+      nbody.appendChild(nullRow);
+    }
+  }
+
+  if (f.hint) nbody.appendChild(mk('div', 'field-hint', f.hint));
+  return wrap;
+}
+
+// ─── Response card ────────────────────────────────────────────────────────────
+
+function buildResponseCard() {
+  const card = mk('div', 'card');
+  card.appendChild(mk('div', 'card-head', 'Response'));
+  card.appendChild(mk('div', 'resp-empty', 'No response yet. Send a request to see the result.'));
+
+  const statusRow = mk('div', 'resp-status');
+  statusRow.id = 'resp-status';
+  card.appendChild(statusRow);
+
+  const body = mk('div', 'resp-body');
+  body.id = 'resp-body';
+  card.appendChild(body);
+
+  return card;
+}
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
+
+function submit(op) {
+  let url = BASE + op.path;
+  const query = {};
+  const payload = {};
+  let ok = true;
+
+  op.fields.forEach(f => {
+    const inp = document.getElementById(`f-${f.key}`);
+    if (!inp) return;
+    let val = inp.value.trim();
+
+    if (f.required && !val) {
+      highlight(inp);
+      ok = false;
+      return;
+    }
+    if (!val) return;
+
+    if (f.type === 'date') {
+      // input[type=date] yields YYYY-MM-DD; API expects DD-MM-YYYY
+      const p = val.split('-');
+      if (p.length === 3) val = `${p[2]}-${p[1]}-${p[0]}`;
+    }
+
+    if (f.in === 'path')  { url = url.replace(`{${f.key}}`, encodeURIComponent(val)); }
+    if (f.in === 'query') { query[f.key] = val; }
+    if (f.in === 'body')  { payload[f.key] = f.type === 'number' ? Number(val) : val; }
+  });
+
+  if (!ok) return;
+
+  (op.nullable || []).forEach(f => {
+    const cb = document.getElementById(`nl-cb-${f.key}`);
+    if (!cb || !cb.checked) return;
+
+    if (f.type === 'bool') {
+      const sel = document.getElementById(`nl-val-${f.key}`);
+      payload[f.key] = sel.value === 'true';
+    } else {
+      const ncb = document.getElementById(`nl-null-${f.key}`);
+      if (ncb && ncb.checked) {
+        payload[f.key] = null;
+      } else {
+        const inp = document.getElementById(`nl-val-${f.key}`);
+        payload[f.key] = inp ? inp.value.trim() || null : null;
+      }
+    }
+  });
+
+  const qs = Object.entries(query).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  if (qs) url += '?' + qs;
+
+  const opts = { method: op.method, headers: {} };
+  if (op.method !== 'GET' && op.method !== 'DELETE') {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(payload);
+  }
+
+  setLoading();
+
+  fetch(url, opts)
+    .then(async res => {
+      const text = await res.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch (_) {}
+      showResponse(res.status, data, text);
+    })
+    .catch(err => showError(err));
+}
+
+// ─── Response display ─────────────────────────────────────────────────────────
+
+const STATUS_TEXT = { 200:'OK', 201:'Created', 204:'No Content', 400:'Bad Request', 404:'Not Found', 409:'Conflict', 500:'Internal Server Error' };
+
+function setLoading() {
+  const sr = document.getElementById('resp-status');
+  sr.style.display = 'flex';
+  sr.innerHTML = '';
+  sr.appendChild(mk('span', 'resp-label', 'Sending request…'));
+  document.getElementById('resp-body').style.display = 'none';
+}
+
+function showResponse(status, data, raw) {
+  const sr = document.getElementById('resp-status');
+  sr.style.display = 'flex';
+  sr.innerHTML = '';
+
+  const cls = status >= 500 ? 's5xx' : status >= 400 ? 's4xx' : 's2xx';
+  sr.appendChild(mk('span', `status-chip ${cls}`, String(status)));
+  sr.appendChild(mk('span', 'resp-label', STATUS_TEXT[status] || ''));
+
+  const rb = document.getElementById('resp-body');
+  rb.style.display = 'block';
+  rb.style.color = 'var(--text)';
+
+  if (status === 204 || !raw.trim()) {
+    rb.textContent = '(no content)';
+  } else if (data !== null) {
+    rb.innerHTML = jsonHighlight(JSON.stringify(data, null, 2));
+  } else {
+    rb.textContent = raw;
+  }
+}
+
+function showError(err) {
+  const sr = document.getElementById('resp-status');
+  sr.style.display = 'flex';
+  sr.innerHTML = '';
+  sr.appendChild(mk('span', 'status-chip s5xx', 'Error'));
+  sr.appendChild(mk('span', 'resp-label', 'Network error — is the server running on localhost:5050?'));
+  const rb = document.getElementById('resp-body');
+  rb.style.display = 'block';
+  rb.textContent = err.message;
+}
+
+// ─── JSON syntax highlighting ─────────────────────────────────────────────────
+
+function jsonHighlight(json) {
+  return json
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(
+      /("(?:\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(?:\s*:)?|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+      m => {
+        if (/^".*"\s*:$/.test(m)) return `<span class="jk">${m}</span>`;
+        if (/^"/.test(m))         return `<span class="js">${m}</span>`;
+        if (/true|false/.test(m)) return `<span class="jb">${m}</span>`;
+        if (m === 'null')         return `<span class="jnull">${m}</span>`;
+        return `<span class="jn">${m}</span>`;
+      }
+    );
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function mk(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls)  e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function separator(label) {
+  const d = mk('div', 'sep');
+  d.appendChild(mk('div', 'sep-line'));
+  d.appendChild(mk('span', 'sep-label', label));
+  d.appendChild(mk('div', 'sep-line'));
+  return d;
+}
+
+function highlight(input) {
+  input.style.borderColor = 'var(--red)';
+  input.focus();
+  setTimeout(() => { input.style.borderColor = ''; }, 1800);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+buildSidebar();
+</script>
+</body>
+</html>
