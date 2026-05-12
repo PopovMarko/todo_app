@@ -162,6 +162,14 @@ paths:
         in: query
         name: id
         type: integer
+      - description: Start date in format DD-MM-YYYY
+        in: query
+        name: from
+        type: string
+      - description: End date in format DD-MM-YYYY
+        in: query
+        name: to
+        type: string
       produces:
       - application/json
       responses:

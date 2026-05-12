@@ -16,8 +16,8 @@ import (
 // @Tags 		Statistics
 // @Produce		json
 // @Param		id query int false "Filter by author ID"
-// @Param 		from query time.Time false "Start date"
-// @Param 		to query time.Time false "End date"
+// @Param 		from query string false "Start date in format DD-MM-YYYY"
+// @Param 		to query string false "End date in format DD-MM-YYYY"
 // @Success		200 {object}  StatisticsDTOResponse "Statistics"
 // @Failure		400 {object} core_http_response.ErrorResponse "Bad request"
 // @Failure 	500 {object} core_http_response.ErrorResponse "internal server error"

@@ -31,6 +31,18 @@ const docTemplate = `{
                         "description": "Filter by author ID",
                         "name": "id",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date in format DD-MM-YYYY",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date in format DD-MM-YYYY",
+                        "name": "to",
+                        "in": "query"
                     }
                 ],
                 "responses": {
