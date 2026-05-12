@@ -21,6 +21,9 @@ import (
 	users_postgres_repository "github.com/PopovMarko/todo_app/internal/features/users/repository/postgres"
 	users_service "github.com/PopovMarko/todo_app/internal/features/users/service"
 	users_transport_http "github.com/PopovMarko/todo_app/internal/features/users/transport/http"
+	web_repository "github.com/PopovMarko/todo_app/internal/features/web/repository/file_system"
+	web_service "github.com/PopovMarko/todo_app/internal/features/web/service"
+	web_transport_http "github.com/PopovMarko/todo_app/internal/features/web/transport/http"
 	"go.uber.org/zap"
 
 	_ "github.com/PopovMarko/todo_app/docs"
@@ -73,6 +76,12 @@ func main() {
 	statService := statistics_service.NewStatisticsService(statReporitory)
 	statHTTPHandler := statistics_transport_http.NewStatisticsHTTPHandler(statService)
 
+	logger.Debug("Initializint feature", zap.String("feature", "web"))
+
+	webRepository := web_repository.NewWebRepository()
+	webService := web_service.NewWebService(webRepository)
+	webHTTPHandler := web_transport_http.NewWebHTTPHandler(webService)
+
 	logger.Debug("Initializing HTTP server")
 
 	config := core_http_server.NewConfigMust()
@@ -93,6 +102,7 @@ func main() {
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 	httpServer.RegisterSwagger()
+	httpServer.RegisterRoutes(webHTTPHandler.Routes()...)
 
 	logger.Debug("Starting todo application")
 
