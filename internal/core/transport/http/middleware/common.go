@@ -32,22 +32,20 @@ func RequestID() Middleware {
 func CORS() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			alowedOrigins := make(map[string]struct{})
 			origin := r.Header.Get("Origin")
+			if origin == "" {
+				origin = "*"
+			}
+
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Request-ID")
 
 			if r.Method == http.MethodOptions {
-				if _, ok := alowedOrigins[origin]; ok {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Set("Access-Control-Allow-Origin-Methods",
-						"POST, GET, OPTIONS, PUT, DELETE, PATCH",
-					)
-					w.Header().Set("Access-Control-Allow-Headers",
-						"Authorization",
-					)
-					w.WriteHeader(http.StatusOK)
-					return
-				}
+				w.WriteHeader(http.StatusNoContent)
+				return
 			}
+
 			next.ServeHTTP(w, r)
 		})
 	}
