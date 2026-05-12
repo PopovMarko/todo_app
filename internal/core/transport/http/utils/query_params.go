@@ -30,7 +30,8 @@ func GetTimeQueryParams(r *http.Request, key string) (*time.Time, error) {
 		return nil, nil
 	}
 
-	val, err := time.Parse(time.RFC3339, param)
+	layout := "01-02-2006"
+	val, err := time.Parse(layout, param)
 	if err != nil {
 		return nil, fmt.Errorf("param %s, by key %s - not a valid time: %v: %w",
 			param, key, err, core_errors.ErrInvalidArgument,
